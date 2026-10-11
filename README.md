@@ -2,6 +2,8 @@
 
 **[Open the calculator →](https://blitztrading.github.io/dca-ladder-calculator/)**
 
+Also on the Blitz site: [the same calculator with a 2x–20x liquidation reference table](https://www.blitz-trading.com/dca-ladder-calculator?utm_source=github&utm_medium=repo&utm_campaign=gh_dca_calculator&utm_content=readme_site_calculator).
+
 Plan a DCA (dollar-cost averaging) ladder for crypto futures and see, after every order:
 
 - the average entry price (weighted by quantity, not the simple average of prices),
@@ -76,7 +78,7 @@ Run the tests with `npm test` (uses the built-in `node:test`, nothing to install
 
 This calculator is made by [Blitz Trading](https://www.blitz-trading.com/dca-trading-bot?utm_source=github&utm_medium=repo&utm_campaign=gh_dca_calculator&utm_content=readme_cta). Blitz is a free DCA ladder bot that runs on your own exchange account:
 
-- **Free.** No subscription and no card. On centralized exchanges the exchange pays Blitz a share of the trading fee, so your fee rate does not go up. Hyperliquid adds a Blitz builder fee, shown in the bot settings.
+- **Free.** No subscription and no card. On centralized exchanges the exchange pays Blitz a share of the trading fee, so your fee rate does not go up. Hyperliquid adds a Blitz builder fee, which you see and approve when you connect your wallet.
 - **Your funds stay with you.** The bot trades on your own exchange account. Blitz never asks for withdrawal access.
 - **Exchanges:** Bybit, Gate, KuCoin, Bitget, BingX and Hyperliquid.
 - **See it live.** A real Blitz bot trades on a [24/7 live stream](https://www.youtube.com/@Blitztradinglab/live), and its [daily record](https://github.com/BlitzTrading/live-bot-record) is public, losing days included.

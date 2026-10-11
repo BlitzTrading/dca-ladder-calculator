@@ -169,7 +169,10 @@ export function buildLadder(input) {
     const liq = rows[i].liquidation;
     if (liq === null) continue;
     const next = rows[i + 1].price;
-    rows[i].liqBeforeNext = long ? next <= liq : next >= liq;
+    // Relative gap, so an exact tie that rounds a hair past the order (entry 3, 10x, mmr 0:
+    // liquidation 2.6999999999999997 vs next 2.7) still blocks it, on sub-cent prices too.
+    const gapPct = ((long ? next - liq : liq - next) / next) * 100;
+    rows[i].liqBeforeNext = gapPct <= 1e-9;
   }
 
   const last = rows[rows.length - 1];

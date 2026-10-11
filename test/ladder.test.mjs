@@ -219,3 +219,23 @@ test('size limit error points at the size multiplier, and the limit is 1e12', ()
   const ok = buildLadder({ side: 'long', entryPrice: 100, firstOrder: 1e9, orders: 3, stepPct: 1, sizeScale: 9 });
   assert.equal(ok.rows.length, 3); // 1e9 + 9e9 + 8.1e10 < 1e12
 });
+
+test('an exact tie on prices that do not round cleanly still blocks the next order', () => {
+  // entry 3, 10x, mmr 0: liquidation 2.6999999999999997 vs next order 2.7; a plain comparison let the order fill
+  const l = buildLadder({ side: 'long', entryPrice: 3, firstOrder: 100, orders: 2, stepPct: 10, stepScale: 1, sizeScale: 1, leverage: 10, mmrPct: 0 });
+  assert.equal(l.rows[0].liqBeforeNext, true);
+  assert.equal(l.summary.liquidatedBeforeOrder, 2);
+  const s = buildLadder({ side: 'short', entryPrice: 29, firstOrder: 100, orders: 2, stepPct: 20, stepScale: 1, sizeScale: 1, leverage: 5, mmrPct: 0 });
+  assert.equal(s.rows[0].liqBeforeNext, true);
+  // a real gap, however small (~0.00001%), is not swallowed by the tolerance
+  const near = buildLadder({ side: 'long', entryPrice: 3, firstOrder: 100, orders: 2, stepPct: 9.99999, stepScale: 1, sizeScale: 1, leverage: 10, mmrPct: 0 });
+  assert.equal(near.rows[0].liqBeforeNext, false);
+});
+
+test('the tie check is relative, so it works the same on sub-cent prices', () => {
+  const tie = buildLadder({ side: 'long', entryPrice: 3e-6, firstOrder: 100, orders: 2, stepPct: 10, stepScale: 1, sizeScale: 1, leverage: 10, mmrPct: 0 });
+  assert.equal(tie.rows[0].liqBeforeNext, true);
+  // a ~0.00001% gap on a 0.000003 price is ~3e-13 absolute: must not count as a tie
+  const gap = buildLadder({ side: 'long', entryPrice: 3e-6, firstOrder: 100, orders: 2, stepPct: 9.99999, stepScale: 1, sizeScale: 1, leverage: 10, mmrPct: 0 });
+  assert.equal(gap.rows[0].liqBeforeNext, false);
+});
