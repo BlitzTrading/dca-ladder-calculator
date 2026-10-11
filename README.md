@@ -25,7 +25,7 @@ Free, no signup, zero dependencies. Everything runs in your browser. Settings li
 | First step % | Distance from the first order to the second. |
 | Step multiplier | Each next gap is the previous gap times this. `1` = evenly spaced. |
 | Size multiplier | Each next order is the previous order times this. `1` = equal sizes. |
-| Take-profit % | Distance of the take-profit from the average entry. |
+| Take-profit % (price) | Price move from the average entry to the take-profit, not return on margin. Many bots, Blitz included, set TP as return on margin = price move × leverage, so divide a bot's TP by its leverage: a bot TP of 1.5% at 5x is `0.3` here. |
 | Leverage | Margin = position value / leverage. |
 | Margin mode | Isolated uses the margin of these orders. Cross uses your whole futures wallet. |
 | Maintenance margin %, fee % | Defaults `0.5%` and `0.05%` per side. Check your exchange's tiers. |

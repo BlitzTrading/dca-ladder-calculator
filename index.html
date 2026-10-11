@@ -115,6 +115,7 @@
         <div><label for="entryPrice">Entry price</label><input id="entryPrice" type="number" step="any" min="0" value="100"></div>
         <div><label for="firstOrder">First order (USDT)</label><input id="firstOrder" type="number" step="any" min="0" value="100"></div>
       </div>
+      <div class="hint" id="orderHint">Position value, not margin.</div>
       <div class="row">
         <div><label for="orders">Orders (incl. first)</label><input id="orders" type="number" min="1" max="100" step="1" value="6"></div>
         <div><label for="stepPct">First step %</label><input id="stepPct" type="number" step="any" min="0" value="2"></div>
@@ -124,9 +125,10 @@
         <div><label for="sizeScale">Size multiplier</label><input id="sizeScale" type="number" step="any" min="0.1" value="1.5"></div>
       </div>
       <div class="row">
-        <div><label for="takeProfitPct">Take-profit %</label><input id="takeProfitPct" type="number" step="any" min="0" value="1.5"></div>
+        <div><label for="takeProfitPct">Take-profit % (price)</label><input id="takeProfitPct" type="number" step="any" min="0" value="1.5"></div>
         <div><label for="leverage">Leverage</label><input id="leverage" type="number" step="any" min="1" max="200" value="3"></div>
       </div>
+      <div class="hint" id="tpHint">Price move from the average entry, not return on margin.</div>
       <label for="marginMode">Margin mode</label>
       <select id="marginMode">
         <option value="isolated">Isolated (margin of these orders only)</option>
@@ -145,6 +147,7 @@
         </div>
         <div class="hint">Order sizes are position value (not margin). Margin = position value / leverage.</div>
       </details>
+      <div class="hint" style="margin-top:12px">Coming from a bot that sets take-profit as return on margin, like Blitz? Divide by leverage: a bot TP of 1.5% at 5x is 0.3% here.</div>
     </form>
 
     <div>
@@ -208,7 +211,7 @@ import { buildLadder } from './ladder.mjs';
 
 const LABELS = {
   entryPrice: 'Entry price', firstOrder: 'First order', orders: 'Orders', stepPct: 'First step %',
-  stepScale: 'Step multiplier', sizeScale: 'Size multiplier', takeProfitPct: 'Take-profit %',
+  stepScale: 'Step multiplier', sizeScale: 'Size multiplier', takeProfitPct: 'Take-profit % (price)',
   leverage: 'Leverage', wallet: 'Futures wallet', mmrPct: 'Maintenance margin %', feePct: 'Fee per side %',
 };
 const LIMITS = {
@@ -295,9 +298,23 @@ function drawChart(res) {
   svg.innerHTML = out;
 }
 
+// Live conversions under the inputs. Bots often set TP as return on margin, which is
+// the price move times leverage; this calculator takes the price move.
+function renderHints(s) {
+  const lev = Number(s.leverage), tp = Number(s.takeProfitPct), first = Number(s.firstOrder);
+  const okLev = s.leverage !== '' && Number.isFinite(lev) && lev >= 1 && lev <= 200;
+  $('tpHint').textContent = okLev && s.takeProfitPct !== '' && Number.isFinite(tp) && tp >= 0 && tp <= 99
+    ? `Price move from the average entry. ${fmtPct(tp)} here is ${fmtPct(tp * lev)} return on margin at ${fmtUsd(lev)}x.`
+    : 'Price move from the average entry, not return on margin.';
+  $('orderHint').textContent = okLev && s.firstOrder !== '' && Number.isFinite(first) && first > 0 && first <= 1e9
+    ? `Position value, not margin. At ${fmtUsd(lev)}x this order uses ${fmtUsd(first / lev)} USDT of margin.`
+    : 'Position value, not margin.';
+}
+
 function render() {
   const s = readState();
   $('walletBox').hidden = s.marginMode !== 'cross';
+  renderHints(s);
   let res;
   try {
     res = buildLadder({ ...s, side });

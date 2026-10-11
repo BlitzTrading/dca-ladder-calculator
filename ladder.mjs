@@ -13,7 +13,8 @@
  * @property {number} stepPct          Distance from the first order to the second, in %.
  * @property {number} [stepScale=1]    Each next gap = previous gap x stepScale.
  * @property {number} [sizeScale=1]    Each next order = previous order x sizeScale.
- * @property {number} [takeProfitPct=1] Take-profit distance from the average entry, in % (under 100).
+ * @property {number} [takeProfitPct=1] Take-profit as a price move from the average entry, in % (under 100).
+ *                                      Not return on margin: ROE % = price move % x leverage.
  * @property {number} [leverage=1]
  * @property {'isolated'|'cross'} [marginMode='isolated']
  * @property {number} [wallet]         Cross margin only: USDT in the futures wallet.
