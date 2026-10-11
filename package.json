@@ -1,0 +1,16 @@
+{
+  "name": "dca-ladder-calculator",
+  "version": "1.0.0",
+  "description": "DCA ladder calculator for crypto futures: average entry, take-profit, break-even and liquidation price after every order.",
+  "type": "module",
+  "main": "ladder.mjs",
+  "exports": "./ladder.mjs",
+  "files": ["ladder.mjs"],
+  "scripts": { "test": "node --test" },
+  "keywords": ["dca", "dca-bot", "trading-bot", "crypto", "futures", "liquidation-price", "calculator", "average-entry"],
+  "homepage": "https://blitztrading.github.io/dca-ladder-calculator/",
+  "repository": { "type": "git", "url": "https://github.com/BlitzTrading/dca-ladder-calculator.git" },
+  "author": "Blitz Trading (https://www.blitz-trading.com/)",
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DCA Ladder Calculator: average entry, take-profit and liquidation price</title>
+<meta name="description" content="Free DCA ladder calculator for crypto futures. See the average entry, take-profit, break-even and liquidation price after every order, for long or short, isolated or cross margin. No signup.">
+<link rel="canonical" href="https://blitztrading.github.io/dca-ladder-calculator/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="DCA Ladder Calculator">
+<meta property="og:description" content="Average entry, take-profit and liquidation price after every DCA order. Free, no signup, runs in your browser.">
+<meta property="og:url" content="https://blitztrading.github.io/dca-ladder-calculator/">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "DCA Ladder Calculator",
+  "url": "https://blitztrading.github.io/dca-ladder-calculator/",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "isAccessibleForFree": true,
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "creator": { "@type": "Organization", "name": "Blitz Trading", "url": "https://www.blitz-trading.com/" }
+}
+</script>
+<style>
+  :root {
+    --dark: #0A0A0F; --panel: #13131B; --line: #26262F;
+    --gold: #F5C842; --gold-light: #FFE27A;
+    --text: #F0EEE8; --muted: #9A9890;
+    --green: #22c55e; --red: #f05252;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--dark); color: var(--text); font: 15px/1.55 "DM Sans", system-ui, sans-serif; }
+  a { color: var(--gold); }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+  header.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; gap: 12px; }
+  .brand { font: 800 15px "Plus Jakarta Sans", sans-serif; color: var(--text); text-decoration: none; letter-spacing: .02em; }
+  .brand span { color: var(--gold); }
+  .toplinks a { color: var(--muted); text-decoration: none; margin-left: 16px; font-size: 14px; }
+  .toplinks a:hover { color: var(--text); }
+  h1 { font: 800 clamp(26px, 5vw, 40px)/1.15 "Plus Jakarta Sans", sans-serif; margin: 18px 0 8px; }
+  .lede { color: var(--muted); max-width: 680px; margin: 0 0 24px; }
+  .grid { display: grid; grid-template-columns: 320px 1fr; gap: 20px; align-items: start; }
+  .grid > * { min-width: 0; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
+  form .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label { display: block; font-size: 12.5px; color: var(--muted); margin: 10px 0 4px; }
+  input, select { width: 100%; background: var(--dark); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 9px 10px; font: inherit; }
+  input:focus, select:focus { outline: 2px solid var(--gold); outline-offset: 0; border-color: transparent; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { background: var(--dark); color: var(--muted); border: 0; padding: 9px; font: 500 14px "DM Sans", sans-serif; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--gold); color: #111; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  @media (max-width: 560px) { .cards { grid-template-columns: repeat(2, 1fr); } }
+  .card { background: var(--dark); border: 1px solid var(--line); border-radius: 10px; padding: 12px; min-width: 0; }
+  .card .k { color: var(--muted); font-size: 12px; }
+  .card .v { font: 700 19px "Plus Jakarta Sans", sans-serif; margin-top: 2px; overflow-wrap: anywhere; }
+  .v.gold { color: var(--gold); } .v.green { color: var(--green); } .v.red { color: var(--red); }
+  .warn { margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; border: 1px solid #5a2020; background: #1d0f10; color: #ffb4b4; font-size: 14px; }
+  .warn:empty { display: none; }
+  .tablewrap { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 8px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { color: var(--muted); font-weight: 500; font-size: 12px; }
+  th:first-child, td:first-child { text-align: left; }
+  tr.blocked td { color: #ff8f8f; }
+  svg { width: 100%; height: auto; display: block; margin-top: 14px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+  .btn { display: inline-block; background: var(--gold); color: #111; border: 0; border-radius: 9px; padding: 10px 16px; font: 700 14px "DM Sans", sans-serif; text-decoration: none; cursor: pointer; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--line); }
+  .cta { margin-top: 20px; border: 1px solid #4a3d12; background: linear-gradient(180deg, #17140A, var(--panel)); }
+  .cta h2 { font: 800 20px "Plus Jakarta Sans", sans-serif; margin: 0 0 6px; }
+  .cta p { margin: 0 0 4px; color: var(--muted); }
+  .cta ul { margin: 8px 0 0; padding-left: 18px; color: var(--text); }
+  section.notes { margin: 28px 0; color: var(--muted); font-size: 14px; }
+  section.notes h2 { color: var(--text); font: 800 18px "Plus Jakarta Sans", sans-serif; }
+  code { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 5px; font-size: 13px; }
+  footer { border-top: 1px solid var(--line); padding: 20px 0 40px; color: var(--muted); font-size: 13px; }
+  footer a { color: var(--muted); }
+  .social { color: var(--muted); font-size: 13px; margin: 24px 0 12px; line-height: 2; }
+  .social a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="https://www.blitz-trading.com/?utm_source=github_pages&amp;utm_medium=web_tool&amp;utm_campaign=gh_dca_calculator&amp;utm_content=header_logo">BLITZ <span>TRADING</span></a>
+    <nav class="toplinks">
+      <a href="https://github.com/BlitzTrading/dca-ladder-calculator">Source</a>
+      <a href="https://github.com/BlitzTrading/live-bot-record">Live bot record</a>
+    </nav>
+  </header>
+
+  <h1>DCA Ladder Calculator</h1>
+  <p class="lede">Plan a DCA ladder for crypto futures. See the average entry, take-profit, break-even and liquidation price after every order, and whether liquidation comes before your last order fills. Free, no signup, and everything runs in your browser.</p>
+
+  <div class="grid">
+    <form class="panel" id="f" autocomplete="off" onsubmit="return false">
+      <label>Side</label>
+      <div class="seg" role="group" aria-label="Side">
+        <button type="button" data-side="long" aria-pressed="true">Long</button>
+        <button type="button" data-side="short" aria-pressed="false">Short</button>
+      </div>
+      <div class="row">
+        <div><label for="entryPrice">Entry price</label><input id="entryPrice" type="number" step="any" min="0" value="100"></div>
+        <div><label for="firstOrder">First order (USDT)</label><input id="firstOrder" type="number" step="any" min="0" value="100"></div>
+      </div>
+      <div class="row">
+        <div><label for="orders">Orders (incl. first)</label><input id="orders" type="number" min="1" max="100" step="1" value="6"></div>
+        <div><label for="stepPct">First step %</label><input id="stepPct" type="number" step="any" min="0" value="2"></div>
+      </div>
+      <div class="row">
+        <div><label for="stepScale">Step multiplier</label><input id="stepScale" type="number" step="any" min="0.1" value="1.3"></div>
+        <div><label for="sizeScale">Size multiplier</label><input id="sizeScale" type="number" step="any" min="0.1" value="1.5"></div>
+      </div>
+      <div class="row">
+        <div><label for="takeProfitPct">Take-profit %</label><input id="takeProfitPct" type="number" step="any" min="0" value="1.5"></div>
+        <div><label for="leverage">Leverage</label><input id="leverage" type="number" step="any" min="1" max="200" value="3"></div>
+      </div>
+      <label for="marginMode">Margin mode</label>
+      <select id="marginMode">
+        <option value="isolated">Isolated (margin of these orders only)</option>
+        <option value="cross">Cross (whole futures wallet)</option>
+      </select>
+      <div id="walletBox" hidden>
+        <label for="wallet">Futures wallet (USDT)</label>
+        <input id="wallet" type="number" step="any" min="0" value="1000">
+        <div class="hint">Assumes this is your only open position.</div>
+      </div>
+      <details>
+        <summary>Fees and maintenance margin</summary>
+        <div class="row">
+          <div><label for="mmrPct">Maintenance margin %</label><input id="mmrPct" type="number" step="any" min="0" value="0.5"></div>
+          <div><label for="feePct">Fee per side %</label><input id="feePct" type="number" step="any" min="0" value="0.05"></div>
+        </div>
+        <div class="hint">Order sizes are position value (not margin). Margin = position value / leverage.</div>
+      </details>
+    </form>
+
+    <div>
+      <div class="panel">
+        <div class="cards" id="cards"></div>
+        <p class="warn" id="warn" role="status"></p>
+        <svg id="chart" viewBox="0 0 640 260" role="img" aria-label="Ladder price levels"></svg>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>#</th><th>Price</th><th>Move</th><th>Order</th><th>Position</th><th>Avg entry</th><th>Take-profit</th><th>Break-even</th><th>Margin</th><th>Liquidation</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button class="btn ghost" type="button" id="copy">Copy link to this ladder</button>
+        </div>
+      </div>
+
+      <div class="panel cta">
+        <h2>Want a ladder like this to run by itself?</h2>
+        <p>Blitz is a free DCA ladder bot that runs on your own exchange account.</p>
+        <ul>
+          <li>Free: no subscription, no card.</li>
+          <li>Your funds stay on your exchange. Blitz never asks for withdrawal access.</li>
+          <li>Bybit, Gate, KuCoin, Bitget, BingX and Hyperliquid (Hyperliquid adds a Blitz builder fee).</li>
+        </ul>
+        <div class="actions">
+          <a class="btn" id="ctaBtn" href="https://www.blitz-trading.com/dca-trading-bot?utm_source=github_pages&amp;utm_medium=web_tool&amp;utm_campaign=gh_dca_calculator&amp;utm_content=result_cta">See how the Blitz bot works</a>
+          <a class="btn ghost" href="https://github.com/BlitzTrading/live-bot-record">Watch a real bot's daily record</a>
+        </div>
+        <p class="hint" style="margin-top:10px">Watch a Blitz bot trade a real account <a href="https://www.youtube.com/@Blitztradinglab/live">live on YouTube, 24/7</a>. Trading involves risk of loss, including your whole margin.</p>
+      </div>
+    </div>
+  </div>
+
+  <section class="notes">
+    <h2>How the numbers are calculated</h2>
+    <p>Order <code>n</code> sits <code>step × (1 + m + m² + …)</code> away from the first price, where <code>m</code> is the step multiplier. Each order is the previous one times the size multiplier. The average entry is weighted by quantity, so it is lower than the simple average of the prices for a long.</p>
+    <p>Liquidation for a linear USDT perpetual: long <code>L = (Q·P − C) / (Q·(1 − mmr))</code>, short <code>L = (Q·P + C) / (Q·(1 + mmr))</code>, where <code>Q</code> is quantity, <code>P</code> the average entry and <code>C</code> the collateral (margin of these orders in isolated mode, the whole wallet in cross mode). Break-even includes the fee on entry and exit.</p>
+    <p>These are estimates. Exchanges use tiered maintenance margin, mark price, funding and their own fee schedules, so real numbers differ. This is a planning tool, not financial advice.</p>
+  </section>
+
+  <p class="social">Follow Blitz:
+    <a href="https://www.youtube.com/@Blitztradinglab/live">YouTube live</a> ·
+    <a href="https://www.youtube.com/@BlitzCryptoLab">Crypto Lab</a> ·
+    <a href="https://t.me/Official_Blitz_Trading_bot">Telegram</a> ·
+    <a href="https://t.me/BlitzTradingLive">Telegram live</a> ·
+    <a href="https://x.com/Blitz_trade_bot">X</a> ·
+    <a href="https://x.com/Blitz_Market_Up">X market</a> ·
+    <a href="https://www.threads.com/@blitztradebot">Threads</a> ·
+    <a href="https://www.instagram.com/blitz_news_26/">Instagram</a>
+  </p>
+  <footer>
+    Open source (MIT) at <a href="https://github.com/BlitzTrading/dca-ladder-calculator">github.com/BlitzTrading/dca-ladder-calculator</a>.
+    Made by <a href="https://www.blitz-trading.com/?utm_source=github_pages&amp;utm_medium=web_tool&amp;utm_campaign=gh_dca_calculator&amp;utm_content=footer">Blitz Trading</a>.
+  </footer>
+</div>
+
+<script type="module">
+import { buildLadder } from './ladder.mjs';
+
+const LABELS = {
+  entryPrice: 'Entry price', firstOrder: 'First order', orders: 'Orders', stepPct: 'First step %',
+  stepScale: 'Step multiplier', sizeScale: 'Size multiplier', takeProfitPct: 'Take-profit %',
+  leverage: 'Leverage', wallet: 'Futures wallet', mmrPct: 'Maintenance margin %', feePct: 'Fee per side %',
+};
+const LIMITS = {
+  entryPrice: 'a price above 0 and up to 1,000,000,000', firstOrder: 'an amount above 0 and up to 1,000,000,000 USDT', orders: 'a whole number from 1 to 100',
+  stepPct: 'from 0 to 99', stepScale: 'from 0.1 to 10', sizeScale: 'from 0.1 to 10', takeProfitPct: 'from 0 to 99',
+  leverage: 'from 1 to 200', wallet: 'an amount from 0 to 1,000,000,000,000 USDT', mmrPct: 'from 0 to 50', feePct: 'from 0 to 5',
+};
+
+const $ = (id) => document.getElementById(id);
+const FIELDS = ['entryPrice', 'firstOrder', 'orders', 'stepPct', 'stepScale', 'sizeScale', 'takeProfitPct', 'leverage', 'marginMode', 'wallet', 'mmrPct', 'feePct'];
+let side = 'long';
+
+function fmtPrice(v) {
+  if (v === null || v === undefined || !Number.isFinite(v)) return '—';
+  const a = Math.abs(v);
+  const d = a >= 1000 ? 2 : a >= 1 ? 4 : a >= 0.01 ? 6 : 8;
+  return v.toLocaleString('en-US', { maximumFractionDigits: d });
+}
+const fmtUsd = (v) => v.toLocaleString('en-US', { maximumFractionDigits: 2 });
+const fmtPct = (v) => (v === null ? '—' : v > 0 && v < 0.005 ? '<0.01%' : v.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '%');
+
+function readState() {
+  const s = { side };
+  for (const k of FIELDS) s[k] = $(k).value;
+  return s;
+}
+
+function writeUrl(s) {
+  const q = new URLSearchParams();
+  q.set('side', s.side);
+  for (const k of FIELDS) if (k !== 'wallet' || s.marginMode === 'cross') q.set(k, s[k]);
+  history.replaceState(null, '', '?' + q.toString());
+}
+
+function loadUrl() {
+  const q = new URLSearchParams(location.search);
+  if (q.get('side') === 'short') setSide('short');
+  for (const k of FIELDS) if (q.has(k)) $(k).value = q.get(k);
+}
+
+function setSide(v) {
+  side = v;
+  document.querySelectorAll('[data-side]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.side === v)));
+}
+
+function card(k, v, cls = '') {
+  return `<div class="card"><div class="k">${k}</div><div class="v ${cls}">${v}</div></div>`;
+}
+
+function drawChart(res) {
+  const svg = $('chart');
+  const rows = res.rows;
+  const last = rows[rows.length - 1];
+  const levels = rows.map((r) => r.price).concat([last.avgEntry, last.takeProfit]);
+  if (last.liquidation !== null) levels.push(last.liquidation);
+  let lo = Math.min(...levels), hi = Math.max(...levels);
+  const pad = (hi - lo) * 0.08 || hi * 0.05 || 1;
+  lo -= pad; hi += pad;
+  const W = 640, H = 260, L = 8, R = 150;
+  const y = (p) => H - 12 - ((p - lo) / (hi - lo)) * (H - 24);
+  const marks = [[last.avgEntry, '#F5C842', 'Avg', ''], [last.takeProfit, '#22c55e', 'TP', '5 4']];
+  if (last.liquidation !== null) marks.push([last.liquidation, '#f05252', 'Liq', '2 4']);
+  // Keep labels apart so close levels stay readable.
+  const placed = marks.map((m) => ({ m, ly: y(m[0]) })).sort((a, b) => a.ly - b.ly);
+  for (let i = 1; i < placed.length; i++) placed[i].ly = Math.max(placed[i].ly, placed[i - 1].ly + 18);
+  for (let i = placed.length - 1; i >= 0; i--) {
+    const maxY = H - 14 - (placed.length - 1 - i) * 18;
+    placed[i].ly = Math.min(placed[i].ly, maxY);
+    if (i > 0) placed[i - 1].ly = Math.min(placed[i - 1].ly, placed[i].ly - 18);
+  }
+  for (const pl of placed) pl.ly = Math.max(pl.ly, 14);
+  let out = '';
+  const maxV = Math.max(...rows.map((r) => r.orderValue));
+  const deadFrom = Math.min(res.summary.liquidatedBeforeOrder ?? Infinity, res.summary.liquidatedAtOrder ?? Infinity);
+  rows.forEach((r, i) => {
+    const w = 18 + (r.orderValue / maxV) * 160;
+    const x = L + 20 + i * Math.min(60, (W - R - 220) / Math.max(1, rows.length - 1));
+    out += `<rect x="${x}" y="${y(r.price) - 4}" width="${w}" height="8" rx="3" fill="${r.order >= deadFrom ? '#7a2b2b' : '#3a3a46'}"/>`;
+  });
+  for (const { m: [p, color, label, dash], ly } of placed) {
+    out += `<line x1="${L}" x2="${W - R}" y1="${y(p)}" y2="${y(p)}" stroke="${color}" stroke-width="1.5" ${dash ? `stroke-dasharray="${dash}"` : ''}/>`;
+    out += `<text x="${W - R + 6}" y="${ly + 4}" fill="${color}" font-size="16" font-family="DM Sans, sans-serif">${label} ${fmtPrice(p)}</text>`;
+  }
+  svg.innerHTML = out;
+}
+
+function render() {
+  const s = readState();
+  $('walletBox').hidden = s.marginMode !== 'cross';
+  let res;
+  try {
+    res = buildLadder({ ...s, side });
+  } catch (e) {
+    const f = e.field;
+    $('warn').textContent = f === 'sizeScale' && /grows past/.test(e.message)
+      ? e.message
+      : f && LABELS[f]
+        ? `${LABELS[f]} ${s[f] === '' ? 'is empty' : 'is out of range'}. Enter ${LIMITS[f]}.`
+        : e.message || 'Check the inputs.';
+    if (f === 'mmrPct' || f === 'feePct') document.querySelector('details').open = true;
+    $('cards').innerHTML = '';
+    $('rows').innerHTML = '';
+    $('chart').innerHTML = '';
+    return;
+  }
+  writeUrl(s);
+  const sm = res.summary;
+  const lastRow = res.rows[res.rows.length - 1];
+  $('cards').innerHTML =
+    card('Total position', fmtUsd(sm.totalPositionValue) + ' USDT') +
+    card('Margin needed', fmtUsd(sm.totalMargin) + ' USDT') +
+    card('Last order at', fmtPrice(lastRow.price) + (sm.maxDeviationPct > 0 ? ` (${side === 'long' ? '−' : '+'}${fmtPct(sm.maxDeviationPct)})` : '')) +
+    card('Final avg entry', fmtPrice(sm.finalAvgEntry), 'gold') +
+    card('Final take-profit', fmtPrice(sm.finalTakeProfit), 'green') +
+    card('Final liquidation', sm.finalLiquidation === null ? 'None' : fmtPrice(sm.finalLiquidation), 'red');
+
+  const warns = [];
+  const atFillFirst = sm.liquidatedAtOrder && (!sm.liquidatedBeforeOrder || sm.liquidatedAtOrder < sm.liquidatedBeforeOrder);
+  const cross = res.input.marginMode === 'cross';
+  const fix = cross ? 'Add to the wallet, or use smaller or fewer orders.' : 'Lower the leverage, the size multiplier or the number of orders.';
+  if (sm.walletShortAtOrder === 1) { /* the wallet message below says it */ }
+  else if (atFillFirst) warns.push(`Order ${sm.liquidatedAtOrder} would be liquidated as soon as it fills. ${fix}`);
+  else if (sm.liquidatedBeforeOrder) warns.push(`Liquidation comes before order ${sm.liquidatedBeforeOrder} can fill, so the red rows would never happen. ${fix}`);
+  if (sm.walletShortAtOrder === 1) warns.push('Your wallet is too small to open the first order at this leverage.');
+  else if (sm.walletShortAtOrder) warns.push(`Your wallet cannot open order ${sm.walletShortAtOrder}: the open loss by then leaves too little free margin.`);
+  else if (sm.walletShortfall > 0) warns.push(`Your wallet is ${fmtUsd(sm.walletShortfall)} USDT short of the margin for all orders.`);
+  if (res.rows.length < res.input.orders) warns.push(`Only ${res.rows.length} orders fit before the price would reach zero.`);
+  $('warn').textContent = warns.join(' ');
+
+  const deadFrom = Math.min(sm.liquidatedBeforeOrder ?? Infinity, sm.liquidatedAtOrder ?? Infinity);
+  $('rows').innerHTML = res.rows.map((r) => `<tr class="${r.order >= deadFrom ? 'blocked' : ''}">
+    <td>${r.order}</td><td>${fmtPrice(r.price)}</td><td>${r.deviationPct ? (side === 'long' ? '−' : '+') + fmtPct(r.deviationPct) : '0%'}</td>
+    <td>${fmtUsd(r.orderValue)}</td><td>${fmtUsd(r.positionValue)}</td><td>${fmtPrice(r.avgEntry)}</td>
+    <td>${fmtPrice(r.takeProfit)}</td><td>${fmtPrice(r.breakEven)}</td><td>${fmtUsd(r.margin)}</td>
+    <td>${r.liquidation === null ? 'None' : fmtPrice(r.liquidation)}</td></tr>`).join('');
+  drawChart(res);
+}
+
+document.querySelectorAll('[data-side]').forEach((b) => b.addEventListener('click', () => { setSide(b.dataset.side); render(); }));
+FIELDS.forEach((k) => $(k).addEventListener('input', render));
+$('copy').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(location.href); $('copy').textContent = 'Link copied'; }
+  catch { $('copy').textContent = 'Copy the address bar'; }
+  setTimeout(() => ($('copy').textContent = 'Copy link to this ladder'), 1800);
+});
+loadUrl();
+render();
+</script>
+</body>
+</html>
